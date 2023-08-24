@@ -1,4 +1,5 @@
 import {Component} from 'react'
+import {AiOutlineCopyright} from 'react-icons/ai'
 import './index.css'
 
 const offerList = [
@@ -20,60 +21,36 @@ const offerList = [
 ]
 
 class BundleSavePage extends Component {
-  state = {activeId: offerList[1].id}
+  state = {activeId: offerList[1].id, isSubmit: false}
 
   onChangeRadioOffers = id => {
     this.setState({activeId: id})
   }
 
-  renderTable = id => (
-    <tr>
-      <td>
-        <p>#{id}</p>
-      </td>
-      <td>
-        <select className="dropdown">
-          <option>S</option>
-          <option>M</option>
-          <option>L</option>
-        </select>
-      </td>
-      <td>
-        <select className="dropdown">
-          <option default>Colour</option>
-          <option>Black</option>
-          <option>Blue</option>
-          <option>Red</option>
-        </select>
-      </td>
-    </tr>
-  )
+  clearTime = id => {
+    clearTimeout(id)
+  }
 
-  renderSwitch = id => {
-    switch (id) {
-      case 1:
-        return this.renderTable(id)
-      case 2:
-        return (
-          <>
-            {this.renderTable(id - 1)}
-            {this.renderTable(id)}
-          </>
-        )
-      default:
-        return (
-          <>
-            {this.renderTable(id - 2)}
-            {this.renderTable(id - 1)}
-            {this.renderTable(id)}
-          </>
-        )
-    }
+  setTimedOut = () => {
+    const intervalId = setTimeout(() => {
+      this.setState(
+        preState => ({isSubmit: !preState.isSubmit}),
+        this.clearTime(intervalId),
+      )
+    }, 2000)
+  }
+
+  onClickBtn = () => {
+    this.setState(
+      preState => ({isSubmit: !preState.isSubmit}),
+      this.setTimedOut,
+    )
   }
 
   render() {
-    const {activeId} = this.state
+    const {activeId, isSubmit} = this.state
     const details = offerList.find(eachItem => eachItem.id === activeId)
+    const numArr = [...Array(activeId)].map((_, i) => i + 1)
 
     return (
       <div className="page-container">
@@ -90,40 +67,65 @@ class BundleSavePage extends Component {
                 this.onChangeRadioOffers(id)
               }
               const bg = activeId === id && 'active-bg'
-              const renderSizeAndColour = () => {
-                this.renderSwitch(id)
-              }
+              const activeInput = activeId === id && 'active-radio'
+              const second = activeId === 2
+              const third = activeId === 3
               return (
                 <li key={id} className={`list-item ${bg}`}>
                   <div className="list-content">
                     <input
                       onChange={onChangeRadio}
-                      className="radio-input"
+                      id="radioInput"
+                      className={`radio-input ${activeInput}`}
                       type="radio"
                       name="offer"
                       checked={activeId === id}
                     />
                     <div className="list-item-content">
                       <div className="pair-and-price">
-                        <p className="pair">{id} pair</p>
+                        <p className="pair">
+                          {id} {id > 1 ? 'pairs' : 'pair'}
+                        </p>
                         <p className="price">DKK: {DKK}.00</p>
                       </div>
-                      <p className="offer">{offer}% OFF</p>
+                      {second === true && activeId === id && (
+                        <p className="not-price">DKK 195.00</p>
+                      )}
+                      {third === true && activeId === id && (
+                        <p className="not-price">DKK 345.00</p>
+                      )}
+                      <div>
+                        {second === true && activeId === id && (
+                          <p className="popular">Most Popular</p>
+                        )}
+                        <p className="offer">{offer}% OFF</p>
+                      </div>
                     </div>
                   </div>
                   {activeId === id && (
-                    <table>
-                      <tr>
-                        <th>{}</th>
-                        <th>
-                          <p className="size-title">Size</p>
-                        </th>
-                        <th>
-                          <p className="colour-title">Colour</p>
-                        </th>
-                      </tr>
-                      {renderSizeAndColour}
-                    </table>
+                    <div className="titles">
+                      <p className="size-title">Size</p>
+                      <p className="colour-title">Colour</p>
+                    </div>
+                  )}
+                  {activeId === id && (
+                    <ul className="features-list">
+                      {numArr.map(num => (
+                        <li className="item" key={num}>
+                          <p className="serial-number">#{num}</p>
+                          <select className="dropdown">
+                            <option>S</option>
+                            <option>M</option>
+                            <option>L</option>
+                          </select>
+                          <select className="dropdown">
+                            <option>Colour</option>
+                            <option>Red</option>
+                            <option>Black</option>
+                          </select>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </li>
               )
@@ -131,11 +133,17 @@ class BundleSavePage extends Component {
           </ul>
           <div className="more-details">
             <p className="shipping">Free 2 Days Shipping</p>
-            <p className="amount">Total:{details.DKK}.00</p>
+            <p className="amount">Total : DKK {details.DKK}.00</p>
           </div>
-          <button className="btn" type="button">
+          <button onClick={this.onClickBtn} className="btn" type="button">
             + Add to Cart
           </button>
+          <p className="copyright">
+            <AiOutlineCopyright /> Powered by Pumper
+          </p>
+          {isSubmit && (
+            <p className="success">Successfully added to your Cart</p>
+          )}
         </div>
       </div>
     )
